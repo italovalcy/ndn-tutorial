@@ -12,7 +12,8 @@ our application will act as a consumer and producer at the same time.
 It is important to remember the way we are modeling English Greetings between
 two or more entities:
 
-.. image:: ../../images/greetings-diagram.png
+![greetings-diagram.png](../../images/greetings-diagram.png)
+
 
 In summary, usually it starts by someone introducing herself/himself, like:
 A) _Hi, I am Foobar_. Then, whoever hears from A will greet in reply: B) 
@@ -24,7 +25,7 @@ the one previously presented. More specifically, consider two NDN nodes
 A and B. The NDN Greetings application will behaves like the following
 workflow diagram:
 
-.. image:: ../../images/ndn-greetings-diagram.png
+![ndn-greetings-diagram.png](../../images/ndn-greetings-diagram.png)
 
 In the above diagram, NodeA will send a hello message to introduce
 itself so any reachable node will know about NodeA existence. This is
@@ -170,7 +171,7 @@ to hello interests and discovery nodes.
    ```
    You should see an output similar to:
 
-.. image:: ../../images/output-exer2-step2.png
+![output-exer2-step2.png](../../images/output-exer2-step2.png)
 
 ### A note about routing
 
@@ -243,7 +244,7 @@ Now it is time to send out greetings interest upon discovering nodes.
    ```
    As a result you should see something similar to the following output:
 
-.. image:: ../../images/output-exer2-step3.png
+![output-exer2-step3.png](../../images/output-exer2-step3.png)
 
    From the output above, we can see that the application is sending
    greetings interest, but we also see other interesting aspects:
