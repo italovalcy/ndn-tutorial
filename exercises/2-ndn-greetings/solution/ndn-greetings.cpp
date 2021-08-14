@@ -20,6 +20,7 @@ NdnGreetings::NdnGreetings(Name appPrefix, Name nodeName)
   , m_rengine(rdevice_())
   , m_rand_nonce(0, std::numeric_limits<int>::max())
 {
+  // TODO 1: Set Interest Filter for HELLO prefix (m_appPrefix + kHelloType)
   Name appHelloPrefix = Name(m_appPrefix);
   appHelloPrefix.append(kHelloType);
   m_face.setInterestFilter(appHelloPrefix, std::bind(&NdnGreetings::OnHelloInterest, this, _2),
@@ -27,6 +28,7 @@ NdnGreetings::NdnGreetings(Name appPrefix, Name nodeName)
       throw std::runtime_error("Failed to register sync interest prefix: " + reason);
   });
 
+  // TODO 4: Set Interest Filter for Greetings prefix (m_appPrefix + kGreetingsType)
   Name appGreetingsPrefix = Name(m_appPrefix);
   appGreetingsPrefix.append(kGreetingsType);
   appGreetingsPrefix.append(m_nodeName);
@@ -75,6 +77,7 @@ void NdnGreetings::OnHelloInterest(const ndn::Interest& interest) {
   const ndn::Name interestName(interest.getName());
   MYLOG_INFO("Received HELLO Interest " << interestName);
 
+  // TODO 2: extract neighbor name; if neighbor is new, send Greetings Interest
   std::string neighName = interestName.getSubName(m_appPrefix.size()+1).toUri();
   if (neighName == m_nodeName) {
     MYLOG_INFO("Hello from myself, ignoring...");
@@ -91,6 +94,7 @@ void NdnGreetings::OnHelloInterest(const ndn::Interest& interest) {
 
 void
 NdnGreetings::SendGreetingsInterest(const std::string& neighName) {
+  // TODO 3: Sending Greetings Interest upon discovering nodes
   MYLOG_INFO("Sending greetings Interest to neighbor=" << neighName);
   Name name = Name(m_appPrefix);
   name.append(kGreetingsType);
@@ -110,6 +114,7 @@ NdnGreetings::SendGreetingsInterest(const std::string& neighName) {
 }
 
 void NdnGreetings::OnGreetingsInterest(const ndn::Interest& interest) {
+  // TODO 5: Reply to Greetings interest
   MYLOG_INFO("Received greetings Interest " << interest.getName());
 
   auto data = std::make_shared<ndn::Data>(interest.getName());

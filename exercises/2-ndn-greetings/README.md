@@ -247,7 +247,7 @@ Now it is time to send out greetings interest upon discovering nodes.
 ![output-exer2-step3.png](../../images/output-exer2-step3.png)
 
    From the output above, we can see that the application is sending
-   greetings interest, but we also see other interesting aspects:
+   greetings interest, and we also see other interesting aspects:
    - As we just mentioned, upon receiving the hello interest (OnHelloInterest)
      each node will send a greetings interest using the same naming prefix
      learned from the neighbor (SendGreetingsInterest)
@@ -259,18 +259,74 @@ Now it is time to send out greetings interest upon discovering nodes.
 
 ## Step 4: Replying to Greetings Interest
 
-TODO
+The last step will be to implement the function that answer the greetings
+interest. Our application will randomly select one greetings expression 
+and sent it in a data packet.
 
-1. The last step will be to implement the function that answer the greetings
-   interest. Our application will randomly select one greetings expression 
-   and sent it in a data packet. To do so, edit the file 
-   `extensions/ndn-greetings.cpp` specially in the
+1. To be able to answer Greetings interest, just like we did for hello, we
+   first to setup a interest filter. To do so, edit the file 
+   `extensions/ndn-greetings.cpp`, specially in the
    *TODO 4*. Right after the TODO comment, you should insert the following
    code:
+   ```cpp
+     Name appGreetingsPrefix = Name(m_appPrefix);
+     appGreetingsPrefix.append(kGreetingsType);
+     appGreetingsPrefix.append(m_nodeName);
+     m_face.setInterestFilter(appGreetingsPrefix, std::bind(&NdnGreetings::OnGreetingsInterest, this, _2),
+       [this](const Name&, const std::string& reason) {
+         throw std::runtime_error("Failed to register sync interest prefix: " + reason);
+     });
+   ```
+   The above code will create an entry on the FIB for the Greetings prefix (i.e.,
+   m\_appPrefix + kGreetingsType + m\_nodeName) and with next hop being the
+   application face.
 
-2. Fix *TODO 5*
+2. Next step is to fix *TODO 5*:
+   ```cpp
+     MYLOG_INFO("Received greetings Interest " << interest.getName());
+   
+     auto data = std::make_shared<ndn::Data>(interest.getName());
+     data->setFreshnessPeriod(ndn::time::milliseconds(1000));
+   
+     // Set greetings answer
+     std::string greetings_str = m_greetings.NextGreetings();
+     data->setContent(reinterpret_cast<const uint8_t*>(greetings_str.c_str()), greetings_str.size());
+     m_keyChain.sign(*data);
+     m_face.put(*data);
+   
+     MYLOG_INFO("Greetings sent! MyMsg: " << greetings_str);
+   ```
+   The code above has the following interesting aspects:
+   - We create the Data object and setup the freshness period to 1000ms (1 second),
+     meaning that data packet will last one second in the Content Store
+   - We use our core application (`greetings-core.cpp`) to generate a random
+     greetings expression to send in the data packate. The setContent() call
+     accept a block of bytes in a certain size. As so, your application has
+     to serialize whatever you wanna send before calling this function. Since
+     we are just sending out strings, there is no need for advanced serialization.
+   - We use the keyChain instance to sign our data. Even though we didnt configure
+     any security so far, since all data packat is signed, ndn-cxx uses a dummy
+     self-signed certificate/key as default.
 
-TODO: a note about Content Store
+3. Compile and run the code:
+   ```cpp
+   ./build-and-run.sh
+   ```
+   The output should looks like the following:
+
+![output-exer2-step4.png](../../images/output-exer2-step4.png)
+
+### A note about the Content Store
+
+As you can see from the output above, all nodes will send two greetings
+interest for the two other nodes (log messages **Sending greetings Interest 
+to neighbor**). In the other hand, when we check the received greetings
+interest on each node, we only see one interest (log message **Received 
+greetings Interest**). That is happening because the second interest
+is answered from the Content Store and dont have to reach the proceder
+application. As we developed in the code, our Data packets have a freshness
+period of 1 second, so any interest received within that period will
+take advantage of the opportunistic cache.
 
 ## Next Steps
 
