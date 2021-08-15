@@ -74,15 +74,13 @@ NdnGreetings::SendHelloInterest() {
 }
 
 void NdnGreetings::OnHelloInterest(const ndn::Interest& interest) {
-  const ndn::Name interestName(interest.getName());
-  MYLOG_INFO("Received HELLO Interest " << interestName);
-
   // TODO 2: extract neighbor name; if neighbor is new, send Greetings Interest
-  std::string neighName = interestName.getSubName(m_appPrefix.size()+1).toUri();
+  /* Sanity check to avoid hello interest from myself */
+  std::string neighName = interest.getName().getSubName(m_appPrefix.size()+1).toUri();
   if (neighName == m_nodeName) {
-    MYLOG_INFO("Hello from myself, ignoring...");
     return;
   }
+  MYLOG_INFO("Received HELLO Interest " << interest.getName());
 
   auto neigh = m_neighMap.find(neighName);
   if (neigh == m_neighMap.end()) {

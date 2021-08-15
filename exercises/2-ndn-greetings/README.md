@@ -65,7 +65,7 @@ see what happens and what need to be done.
    This will start our docker container with ndnSIM 2.8 and some
    customizations:
    * The source code of this exercise will be mounted as a volume at
-     /ndn-greetings,
+     /simulation,
    * Some environment variables will be instantiated in order to allow you
      to run experiments using the graphical user interface (visualizer)
    * Speaking of the visualizer, right after the docker startup, we will
@@ -144,8 +144,13 @@ to hello interests and discovery nodes.
    specifically `TODO 2`. You can insert the following code right after the
    TODO comment:
    ```cpp
-     std::string neighName = interestName.getSubName(m_appPrefix.size()+1).toUri();
-   
+     /* Sanity check to avoid hello interest from myself */
+     std::string neighName = interest.getName().getSubName(m_appPrefix.size()+1).toUri();
+     if (neighName == m_nodeName) {
+       return;
+     }
+     MYLOG_INFO("Received HELLO Interest " << interest.getName());
+
      auto neigh = m_neighMap.find(neighName);
      if (neigh == m_neighMap.end()) {
        SendGreetingsInterest(neighName);
