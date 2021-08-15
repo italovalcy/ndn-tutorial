@@ -29,6 +29,10 @@ Let's get started!
 
 ## Step 1: Loading the Data Validator Config
 
+0. In your shell, make sure you are at the exercise folder:
+   ```bash
+   cd ~/ndn-tutorial/exercises/2-ndn-greetings
+   ```
 1. The first step we need to do is create the validation config. To do so,
    create the file `config/validation.conf` with the following content:
    ```

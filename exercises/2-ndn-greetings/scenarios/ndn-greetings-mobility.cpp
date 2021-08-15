@@ -133,7 +133,7 @@ main(int argc, char* argv[])
   Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Mac/MacTxDrop", MakeCallback(&MacTxDrop));
   Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/PhyRxDrop", MakeCallback(&PhyRxDrop));
   Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/PhyTxDrop", MakeCallback(&PhyTxDrop));
-  Simulator::Schedule(Seconds(duration - 1), &PrintDrop);
+  Simulator::Schedule(Seconds(duration), &PrintDrop);
 
   Simulator::Stop(Seconds(duration));
 
