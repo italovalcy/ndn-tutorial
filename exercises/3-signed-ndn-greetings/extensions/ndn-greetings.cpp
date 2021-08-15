@@ -45,7 +45,7 @@ NdnGreetings::NdnGreetings(Name appPrefix, Name nodeName)
 }
 
 void NdnGreetings::Start() {
-  SendHelloInterest();
+  m_scheduler.schedule(time::seconds(1), [this] { SendHelloInterest(); });
 }
 
 void NdnGreetings::Stop() {
@@ -75,8 +75,8 @@ NdnGreetings::SendHelloInterest() {
                         [](const Interest&, const lp::Nack&) {},
                         [](const Interest&) {});
 
-  //m_scheduler.schedule(time::seconds(1),
-  //                                      [this] { SendHelloInterest(); });
+  // XXX: Sending periodic hello interest
+  // m_scheduler.schedule(time::seconds(1), [this] { SendHelloInterest(); });
 }
 
 void NdnGreetings::OnHelloInterest(const ndn::Interest& interest) {
@@ -133,8 +133,6 @@ void NdnGreetings::OnGreetingsInterest(const ndn::Interest& interest) {
 }
 
 void NdnGreetings::OnGreetingsContent(const ndn::Interest& interest, const ndn::Data& data) {
-  MYLOG_DEBUG("Greetings data received name: " << data.getName());
-
   // TODO 2: Call the Validator upon receiving a data packet
 }
 

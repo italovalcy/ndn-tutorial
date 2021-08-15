@@ -59,7 +59,7 @@ main(int argc, char* argv[])
     idx += 1;
   }
 
-  Simulator::Stop(Seconds(10.0));
+  Simulator::Stop(Seconds(30.0));
 
   Simulator::Run();
   Simulator::Destroy();

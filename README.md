@@ -7,14 +7,10 @@ you get started with NDN architecture, ndnSIM simulator, NDN-CXX/NFD
 APIs, and the overall NDN application development. The NDN tutorial is
 organized into several modules:
 
-1. Introduction to ndnSIM environment and Helloworld example
-* [Basic Helloworld](./exercises/1a-basic_helloworld)
-* [NDN Helloworld](./exercises/1b-ndn_helloworld)
-
-2. Simple Producer/Consumer Application
+1. Simple Producer/Consumer Application
 * [NDN-Greetings](./exercises/2-ndn-greetings)
 
-3. Secure NDN Applications
+2. Secure NDN Applications
 * [Signed NDN-Greetings](./exercises/3-signed-ndn-greetings)
 
 ## NDN-Greetings
@@ -27,17 +23,17 @@ that can be used in formal and daily conversations.
 
 A typical scenario where two people greet each other is:
 
-TODO: image
+![greetings-diagram.png](images/greetings-diagram.png)
 
 Follow the modules on our tutorial to learn many other English Greetings,
 and also learn more about NDN architecture, of course.
 
 ## Presentation and Textbook
 
-The slides are available [online](http://link-will-be-available-soon)
+The slides are available [online](https://www.sbrc2021.facom.ufu.br/pt-br/programacao/minicursos/mc2-revisitando-icns-mobilidade-seguranca-e-aplicacoes-distribuidas-atraves)
 and the textbook for this tutorial (presented as a Short course at 
 [SBRC 2021](https://www.sbrc2021.facom.ufu.br/)) is also available
-[online](http://link-will-be-available-soon).
+[online](https://www.sbrc2021.facom.ufu.br/pt-br/programacao/minicursos/mc2-revisitando-icns-mobilidade-seguranca-e-aplicacoes-distribuidas-atraves).
  
 ## Execution Environment
 

@@ -46,7 +46,7 @@ main(int argc, char* argv[])
 
   // Setup root certificate and export to the trust anchor
   std::string rootName = "/ndn-greetings";
-  setupRootCert(rootName, "rootCert.crt");
+  setupRootCert(rootName, "./build/rootCert.crt");
 
   // Set Multicast strategy
   ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/multicast");
@@ -70,7 +70,7 @@ main(int argc, char* argv[])
     }
   }
 
-  Simulator::Stop(Seconds(10.0));
+  Simulator::Stop(Seconds(30.0));
 
   Simulator::Run();
   Simulator::Destroy();
