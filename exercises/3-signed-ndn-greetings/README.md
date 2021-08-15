@@ -31,7 +31,7 @@ Let's get started!
 
 0. In your shell, make sure you are at the exercise folder:
    ```bash
-   cd ~/ndn-tutorial/exercises/2-ndn-greetings
+   cd ~/ndn-tutorial/exercises/3-signed-ndn-greetings
    ```
 1. The first step we need to do is create the validation config. To do so,
    create the file `config/validation.conf` with the following content:
