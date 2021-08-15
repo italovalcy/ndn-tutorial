@@ -61,9 +61,6 @@ NdnGreetings::SendHelloInterest() {
 }
 
 void NdnGreetings::OnHelloInterest(const ndn::Interest& interest) {
-  const ndn::Name interestName(interest.getName());
-  MYLOG_INFO("Received HELLO Interest " << interestName);
-
   // TODO 2: extract neighbor name; if neighbor is new, send Greetings Interest
 }
 
