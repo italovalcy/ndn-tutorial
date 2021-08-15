@@ -16,7 +16,7 @@ docker run -d --name $NAME \
   --ipc=host \
   --cap-drop=ALL \
   --security-opt=no-new-privileges \
-  emrevoid/ndnsim:2.8 tail -f /dev/null
+  emrevoid/ndnsim:2.8-debug tail -f /dev/null
 
 docker cp ../../misc/fix-visualizer.patch $NAME:/tmp/
 docker exec -it $NAME bash -c 'cd /home/ndn/ndnSIM/ns-3/src/visualizer && git apply /tmp/fix-visualizer.patch'

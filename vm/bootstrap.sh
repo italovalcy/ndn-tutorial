@@ -68,4 +68,4 @@ usermod -aG docker ndn
 apt clean
 
 # Pull docker image to be used in the tutorial
-docker pull emrevoid/ndnsim:2.8
+docker pull emrevoid/ndnsim:2.8-debug

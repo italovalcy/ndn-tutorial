@@ -74,7 +74,7 @@ see what happens and what need to be done.
 2. The next step will be compile the (incomplete) application:
    ```bash
    docker exec -it ndn-tutorial-e2 bash
-   ./waf configure
+   ./waf configure --debug
    ./waf
    ```
    The commands above will i) switch to the docker container shell, ii) run
