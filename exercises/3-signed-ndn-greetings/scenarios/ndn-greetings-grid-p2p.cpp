@@ -42,7 +42,7 @@ main(int argc, char* argv[])
 
   // Add route static routes to Application prefix
   std::string ndnGreetingsPrefix = "/localhop/ndn-greetings";
-  AddStaticRouteAllNodes(ndnGreetingsPrefix);
+  AddStaticRouteAllNodes(ndnGreetingsPrefix+"/hi-i-am");
 
   // Setup root certificate and export to the trust anchor
   std::string rootName = "/ndn-greetings";

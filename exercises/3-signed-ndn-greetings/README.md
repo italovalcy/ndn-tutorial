@@ -157,11 +157,11 @@ Let's get started!
 ![output-exer3-step2-1.png](../../images/output-exer3-step2-1.png)
 ![output-exer3-step2-2.png](../../images/output-exer3-step2-2.png)
 
-    You will notice the following error on the validator: `Fail to validate data: name: /localhop/ndn-greetings/greetings/ufba/Node3 error: Cannot retrieve certificate (Cannot fetch certificate after all retries /ufba/Node3/KEY/%9C%5E%04%F3%FFs%18%A5`
-    The error is happening because the node does not have the key used to
-    sign the data packet, and failed to fetch that key from the Network.
-    In the next step, we will solve this issue by adding the capability
-    of distributing the Key to our application.
+You will notice the following error on the validator: `Fail to validate data: name: /localhop/ndn-greetings/greetings/ufba/Node3 error: Cannot retrieve certificate (Cannot fetch certificate after all retries /ufba/Node3/KEY/%9C%5E%04%F3%FFs%18%A5`
+The error is happening because the node does not have the key used to
+sign the data packet, and failed to fetch that key from the Network.
+In the next step, we will solve this issue by adding the capability
+of distributing the Key to our application.
 
 ## Step 3: Enable node Certificate distribution
 
