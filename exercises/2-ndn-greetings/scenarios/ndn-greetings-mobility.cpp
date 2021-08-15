@@ -111,7 +111,7 @@ main(int argc, char* argv[])
 
   // Add route static routes to Application prefix
   std::string ndnGreetingsPrefix = "/localhop/ndn-greetings";
-  AddStaticRouteAllNodes(ndnGreetingsPrefix);
+  AddStaticRouteAllNodes(ndnGreetingsPrefix+"/hi-i-am");
 
   // Set Forwarding Strategy
   ndn::StrategyChoiceHelper::Install(nodes, "/", "/localhost/nfd/strategy/multicast");
