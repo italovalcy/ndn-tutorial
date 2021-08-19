@@ -2,7 +2,15 @@
 
 ## Introduction
 
-TODO
+In this first exercise, we will build a very simple application that just
+exchange interest / data packets do demonstrate the NDN architecture and
+the ndn-cxx APIs. We provide two scenarios: the first one with just two
+nodes, one producer and one consumer; the second one with the same app
+but with three nodes, an additional forwarder. Through out the exercise
+we will explore some of the NDN components, like the FIB, PIT and CS. In
+the end, you will have the opportunity to also use the graphical visualizer
+from ndnSIM, which is quite helpful to troubleshoot issues during the
+development of a new application.
 
 Let's get started!
 
