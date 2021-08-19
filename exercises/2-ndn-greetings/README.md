@@ -16,7 +16,7 @@ two or more entities:
 
 
 In summary, usually it starts by someone introducing herself/himself, like:
-A) _Hi, I am Foobar_. Then, whoever hears from A will greet in reply: B) 
+A) _Hi, I am A_. Then, whoever hears from A will greet in reply: B)
 _Hey, A!_. Moving forward, A will send a greetings back to B:
 _How are you doing?_.
 
