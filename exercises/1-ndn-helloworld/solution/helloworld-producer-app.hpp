@@ -1,9 +1,9 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 
-#ifndef HELLOWORLD_CONSUMER_APP_HPP
-#define HELLOWORLD_CONSUMER_APP_HPP
+#ifndef HELLOWORLD_PRODUCER_APP_HPP
+#define HELLOWORLD_PRODUCER_APP_HPP
 
-#include "helloworld-consumer.hpp"
+#include "helloworld-producer.hpp"
 
 #include "ns3/ndnSIM/helper/ndn-stack-helper.hpp"
 #include "ns3/application.h"
@@ -12,24 +12,24 @@
 namespace ns3 {
 
 // Class inheriting from ns3::Application
-class HelloworldConsumerApp : public Application
+class HelloworldProducerApp : public Application
 {
 public:
   static TypeId
   GetTypeId()
   {
-    static TypeId tid = TypeId("HelloworldConsumerApp")
+    static TypeId tid = TypeId("HelloworldProducerApp")
       .SetParent<Application>()
-      .AddConstructor<HelloworldConsumerApp>()
+      .AddConstructor<HelloworldProducerApp>()
       .AddAttribute("Prefix", "NDN Helloworld Prefix", StringValue("/ndn/helloworld"),
-                    MakeStringAccessor(&HelloworldConsumerApp::_prefix), MakeStringChecker())
+                    MakeStringAccessor(&HelloworldProducerApp::_prefix), MakeStringChecker());
 
     return tid;
   }
 
 protected:
   virtual void StartApplication() {
-    m_instance.reset(new ::ndn::greetings::HelloworldConsumer(_prefix));
+    m_instance.reset(new ::ndn::helloworld::HelloworldProducer(_prefix));
     m_instance->Start();
   }
 
@@ -39,10 +39,10 @@ protected:
   }
 
 private:
-  std::unique_ptr<::ndn::greetings::HelloworldConsumer> m_instance;
+  std::unique_ptr<::ndn::helloworld::HelloworldProducer> m_instance;
   std::string _prefix;
 };
 
 } // namespace ns3
 
-#endif // HELLOWORLD_CONSUMER_APP_HPP
+#endif // HELLOWORLD_PRODUCER_APP_HPP

@@ -1,42 +1,8 @@
-# NDN-Greetings: Simple Producer/Consumer Application
+# NDN-Helloworld: A very simple NDN helloworld application
 
 ## Introduction
 
-In this exercise, we will be using NDN-CXX API to create an application
-to mimic the way people say Greetings in English. We will build our application
-on top of the same structure that you used in the 
-[NDN Helloworld](../1b-ndn_helloworld) exercise. The main difference is that
-now we are building a more robust NDN application and each NDN node running
-our application will act as a consumer and producer at the same time.
-
-It is important to remember the way we are modeling English Greetings between
-two or more entities:
-
-![greetings-diagram.png](../../images/greetings-diagram.png)
-
-
-In summary, usually it starts by someone introducing herself/himself, like:
-A) _Hi, I am Foobar_. Then, whoever hears from A will greet in reply: B) 
-_Hey, A!_. Moving forward, A will send a greetings back to B:
-_How are you doing?_.
-
-On our NDN Greetings application, the workflow will be pretty similar to
-the one previously presented. More specifically, consider two NDN nodes
-A and B. The NDN Greetings application will behaves like the following
-workflow diagram:
-
-![ndn-greetings-diagram.png](../../images/ndn-greetings-diagram.png)
-
-In the above diagram, NodeA will send a hello message to introduce
-itself so any reachable node will know about NodeA existence. This is
-done through an Interest packet. Whoever receives the hello interest
-from NodeA, will send a greetings interest using the naming schema
-learned from the hello interest. Finally, NodeA will reply the
-greetings interest with a greetings data. Since English has many ways
-to say greetings, a random answer will be chosen. It is worthy to note
-that NodeB will follow the same work flow as NodeA: NodeB will send a 
-hello interest; NodeA will send a greetings interest upon receiving 
-the hello interest from NodeB; NodeB will answer with a greetings data.
+TODO
 
 Let's get started!
 
@@ -44,336 +10,753 @@ Let's get started!
 > sub-directory. Feel free to compare your implementation to the
 > reference.
 
-## Step 1: Run the (incomplete) NDN-Greetings application
-
-The code for this module is located in the file named `ndn-greetings.cpp`,
-inside the folder `extensions`, and it will be modified to implement the
-application logic.
-
-First of all, let's just compile and run the original application code, and
-see what happens and what need to be done.
+## Part 1: Creating and running the basic helloworld ndn app
 
 0. In your shell, make sure you are at the exercise folder:
    ```bash
-   cd ~/ndn-tutorial/exercises/2-ndn-greetings
+   cd ~/ndn-tutorial/exercises/1-ndn-helloworld
    ```
 
-1. In your shell, run:
+1. To start developing our application we will create a specific repository
+   to write our simulation scenarios and application code. This is actually
+   the recommmended way of writing simulation scenarios for ndnSIM. To do
+   so, let's use the following template repository:
+   ```bash
+   git clone https://github.com/named-data-ndnSIM/scenario-template.git ndn-helloworld
+   sed -i "s/'-pedantic'/#'-pedantic'/g" ndn-helloworld/.waf-tools/default-compiler-flags.py
+   ```
+   Once you clone the template repository, you will have the following files/folders:
+   - `README.md`: This is a README documentation of the application. You should change
+      it accordingly;
+   - `extensions/`: This is the most important folder, where all code you create for
+      the application should be placed
+   - `scenarios/`: this is also an important directory because it is used to define
+      the scenarios where your application will be running. NS-3 and ndnSIM have a
+      well defined separation on the application code and the scenario, i.e. the 
+      environment being simulated (a wifi scenario, point-to-point, different
+      topologies, etc).
+   - `waf`, `wscript` and `.waf-tools/`: those are files/directories related to the
+     waf build system. You rarely have to change something here, unless you really
+     want to customize some build parameters or something. In the sequence of
+     commands above, for instance, we changed one of the the compilation parameters.
+   - `run.py`, `graphs/` and `results/` contains a set of helpful scripts for
+     large scale simulations and analyzes.
+   The template repository comes without any application/scenario. In the next steps
+   we will create a simple scenario and the helloworld application.
+
+2. Once we have our repository ready, let's create a docker container to run our
+   simulations later:
    ```bash
    ./start-docker.sh
    ```
-   This will start our docker container with ndnSIM 2.8 and some
-   customizations:
-   * The source code of this exercise will be mounted as a volume at
-     /ndn-greetings,
-   * Some environment variables will be instantiated in order to allow you
-     to run experiments using the graphical user interface (visualizer)
-   * Speaking of the visualizer, right after the docker startup, we will
-     apply a patch to fix minor problems on the visualizer
 
-2. The next step will be compile the (incomplete) application:
-   ```bash
-   docker exec -it ndn-tutorial-e2 bash
-   ./waf configure
-   ./waf
-   ```
-   The commands above will i) switch to the docker container shell, ii) run
-   waf build system to configure the build process and, finally, iii) build
-   the (incomplete) application.
-
-3. Now you can run the (incomplete) application and check the output:
-   ```bash
-   NS_LOG=ndn.Greetings ./waf --run "ndn-greetings-grid-p2p --nNodes=2"
-   ```
-   This will execute the whole simulation using the NDN-Greetings application
-   in a point-to-point NxN grid scenario (N being `--nNodes` parameter). Since
-   the application is incomplete, you should **only** see the nodes sending
-   hello, but no other message. The output should looks like:
-   ```bash
-   ndn@ec2d9a371517:/simulation$ NS_LOG=ndn.Greetings ./waf --run "ndn-greetings-grid-p2p --nNodes=2"
-   Waf: Entering directory `/simulation/build'
-   Waf: Leaving directory `/simulation/build'
-   'build' finished successfully (0.115s)
-   +0.010000000s 0 ndn.Greetings:SendHelloInterest(): [INFO ] Sending Interest /localhop/ndn-greetings/hi-i-am/ufba/Node0
-   +0.010000000s 1 ndn.Greetings:SendHelloInterest(): [INFO ] Sending Interest /localhop/ndn-greetings/hi-i-am/ufba/Node1
-   +0.010000000s 2 ndn.Greetings:SendHelloInterest(): [INFO ] Sending Interest /localhop/ndn-greetings/hi-i-am/ufba/Node2
-   +0.010000000s 3 ndn.Greetings:SendHelloInterest(): [INFO ] Sending Interest /localhop/ndn-greetings/hi-i-am/ufba/Node3
-   ```
-
-4. You can exit the docker container for now and go back to the virtual
-   machine shell:
-   ```bash
-   exit
-   ```
-   In the next section, we will modify the application to listen to those
-   hello messages.
-
-## Step 2: Listening to hello messages and discovering nodes
-
-The next step towards our complete NDN-Greetings application is to listen
-to hello interests and discovery nodes.
-
-1. Listening to a prefix name in NDN usually means create a FIB entry
-   with next-hop being the application face, or configure an interest
-   filter for the prefix on the application face. To implement this change, we
-   will modify the file `extensions/ndn-greetings.cpp`
-   (the virtual machine includes two text editors: vim and mousepad). Look
-   for `TODO 1` in the code. Right after the TODO comment, you should insert
-   the code to set the interest filter:
+3. The first step towards running a helloworld in ndnSIM simulation environment is to
+   create a scenario. We will create a simple scenario, with just two nodes, one being
+   the consumer and the other being the producer, both connected through a point-to-point
+   ethernet link. To do so, create the file `ndn-helloworld/scenarios/helloworld-2nodes.cpp`
+   with the following content:
    ```cpp
-     Name appHelloPrefix = Name(m_appPrefix);
-     appHelloPrefix.append(kHelloType);
-     m_face.setInterestFilter(appHelloPrefix, std::bind(&NdnGreetings::OnHelloInterest, this, _2),
-       [this](const Name&, const std::string& reason) {
-         throw std::runtime_error("Failed to register sync interest prefix: " + reason);
-     });
-   ```
-   You should notice that the code above will call the function 
-   `NdnGreetings::OnHelloInterest` upon receiving an interest for the
-   prefix name `/<m_appPrefix>/<kHelloType>`. The next step will look
-   into that function.
-   It is worthy mentioning that, since we have created an interest filter
-   under the same naming prefix in which we send out interest hello messages,
-   some adjustments were necessary to make sure the application would work
-   properly (see more information in the subsection *A note about routing*).
-
-2. Now that our application is listening to the hello interests, it will be
-   able to discovery neighbors. Once we discovery a new neighbor we can send
-   greetings interest for it. To implement this logic, we will keep modifying
-   the file `extensions/ndn-greetings.cpp`, more
-   specifically `TODO 2`. You can insert the following code right after the
-   TODO comment:
-   ```cpp
-     std::string neighName = interestName.getSubName(m_appPrefix.size()+1).toUri();
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
    
-     auto neigh = m_neighMap.find(neighName);
-     if (neigh == m_neighMap.end()) {
-       SendGreetingsInterest(neighName);
-     } else {
-       MYLOG_INFO("Skipping already known neighbor" << neighName);
-     }
+   #include "helloworld-consumer-app.hpp"
+   #include "helloworld-producer-app.hpp"
+   
+   #include "ns3/core-module.h"
+   #include "ns3/network-module.h"
+   #include "ns3/point-to-point-module.h"
+   #include "ns3/ndnSIM-module.h"
+   
+   namespace ns3 {
+   
+   int
+   main(int argc, char* argv[])
+   {
+     Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("1Mbps"));
+     Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("10ms"));
+   
+     // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
+     CommandLine cmd;
+     cmd.Parse(argc, argv);
+   
+     // Creating nodes
+     NodeContainer nodes;
+     nodes.Create(2);
+   
+     // Connecting nodes
+     PointToPointHelper p2p;
+     p2p.Install(nodes.Get(0), nodes.Get(1));
+   
+     // Install NDN stack on all nodes
+     ndn::StackHelper ndnHelper;
+     ndnHelper.SetDefaultRoutes(true);
+     ndnHelper.InstallAll();
+   
+     // Choosing forwarding strategy
+     ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/multicast");
+   
+     // Installing applications
+   
+     // Consumer
+     ndn::AppHelper consumerApp("HelloworldConsumerApp");
+     consumerApp.Install(nodes.Get(0));
+   
+     // Producer
+     ndn::AppHelper producerApp("HelloworldProducerApp");
+     producerApp.Install(nodes.Get(1));
+   
+     Simulator::Stop(Seconds(10.0));
+   
+     Simulator::Run();
+     Simulator::Destroy();
+   
+     return 0;
+   }
+   
+   } // namespace ns3
+   
+   int
+   main(int argc, char* argv[])
+   {
+     return ns3::main(argc, argv);
+   }
    ```
-   The code above has two main blocks: 1) extract the neighbor name; 2) call 
-   `SendGreetingsInterest()` for new neighbors. Extracting the neighbor name
-   is basically processing the interest name and ignoring the first components
-   correspondent to application prefix (e.g., `/localhop/ndn-greetings`) plus
-   the hello type name component (e.g., 'hi-i-am'). Right after those two name
-   components, there will be the node name.
-   Once we've extracted the neighbor name, it is time to send greetings interest
-   to the new neighbor. Our application utilize a map data structure to keep
-   track of neighbors.
 
-3. Having done the modifications above, let's see how the application will
-   perform! The next command will compile and run the application inside the
-   docker container, all in a single command:
-   ```bash
-   ./build-and-run.sh
-   ```
-   You should see an output similar to:
-
-![output-exer2-step2.png](../../images/output-exer2-step2.png)
-
-### A note about routing
-
-As we mentioned above, once we've set the interest filter on the application
-face under the same naming prefix which we send out interest hello message, we
-had to make some adjustments on the node's routing configuration. In summary,
-the adjustments were:
-- We have to create an additional FIB entry to forward interest packets out of
-  all the non-local faces (i.e., the faces associated with the point-to-point
-  network devices).
-- We have to use Multicast forwarding strategy, for all name prefixes or at
-  least for the application name prefix
-
-This is necessary because our application plays the role of producers and
-consumers at the same time. Thus, as a consumer there is a FIB entry that
-instructs NFD to forward interests out of the non-local faces (i.e., faces
-connecting the node to other nodes through the point-to-point links). As a
-producer, the node has a FIB entry the instructs NFD to forward interests to
-the local application face. Futhermore, in this situation, the forwarding
-strategy for the name prefix has to be Multicast, to ensure the an interest
-will be forwarded to both local and non-local faces.
-
-
-## Step 3: Sending Greetings Interest upon discovering nodes
-
-Now it is time to send out greetings interest upon discovering nodes.
-
-1. In the previous step, we've created a code to call the `SendGreetingsInterest()`
-   function. Now, we are going to implement that function to actually send
-   out the greetings interest. To do so, edit the file 
-   `extensions/ndn-greetings.cpp` specially in the *TODO 3*. Right after the TODO 
-   comment, you should insert the following
-   code:
+4. Next step will be creating the two applications used in the scenario:
+   HelloworldConsumerApp and HelloworldProducerApp. First, create the file
+   `ndn-helloworld/extensions/helloworld-consumer-app.hpp` with the following
+   content:
    ```cpp
-     MYLOG_INFO("Sending greetings Interest to neighbor=" << neighName);
-     Name name = Name(m_appPrefix);
-     name.append(kGreetingsType);
-     name.append(neighName);
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+   
+   #ifndef HELLOWORLD_CONSUMER_APP_HPP
+   #define HELLOWORLD_CONSUMER_APP_HPP
+   
+   #include "helloworld-consumer.hpp"
+   
+   #include "ns3/ndnSIM/helper/ndn-stack-helper.hpp"
+   #include "ns3/application.h"
+   #include <ns3/core-module.h>
+   
+   namespace ns3 {
+   
+   // Class inheriting from ns3::Application
+   class HelloworldConsumerApp : public Application
+   {
+   public:
+     static TypeId
+     GetTypeId()
+     {
+       static TypeId tid = TypeId("HelloworldConsumerApp")
+         .SetParent<Application>()
+         .AddConstructor<HelloworldConsumerApp>()
+         .AddAttribute("Prefix", "NDN Helloworld Prefix", StringValue("/ndn/helloworld"),
+                       MakeStringAccessor(&HelloworldConsumerApp::_prefix), MakeStringChecker());
+   
+       return tid;
+     }
+   
+   protected:
+     virtual void StartApplication() {
+       m_instance.reset(new ::ndn::helloworld::HelloworldConsumer(_prefix));
+       m_instance->Start();
+     }
+   
+     virtual void StopApplication() {
+       m_instance->Stop();
+       m_instance.reset();
+     }
+   
+   private:
+     std::unique_ptr<::ndn::helloworld::HelloworldConsumer> m_instance;
+     std::string _prefix;
+   };
+   
+   } // namespace ns3
+   
+   #endif // HELLOWORLD_CONSUMER_APP_HPP
+   ```
+   Then, create the file `ndn-helloworld/extensions/helloworld-consumer-app.cpp`
+   with the following code:
+   ```cpp
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+   
+   #include "helloworld-consumer-app.hpp"
+   
+   namespace ns3 {
+   
+   NS_OBJECT_ENSURE_REGISTERED(HelloworldConsumerApp);
+   
+   } // namespace ns3
+   ```
+   Now let's discuss the code above and understand what is going on. As you
+   noticed, the code above does not seems to be an actual consumer application:
+   it does not generate NDN interests, does not have NDN faces, etc. Indeed,
+   the code above is actually just an wrapper between the ns3 scenario
+   definition and the actual NDN application. It is a good practice to do
+   this way, because it will be easier for you to migrate from ndnSIM to
+   other execution environments in the future (e.g., MiniNDN). Therefore,
+   the code above can be understood as:
+   - The cpp file will be used just to make sure our consumer application
+     is registered into ns3 list of applications (AppHelper)
+   - The `GetTypeId()` method can be used to define attributes that can
+     be customized when instantiating the app in the scanario. Our
+     helloworld app have just one attribute: the name prefix used for
+     sending out the helloworld (by default `/ndn/helloworld`)
+   - Another important method on our application wrapper is the
+     `StartApplication()`. Its goal is to instantiate our real app
+     (`HelloworldConsumer`) with the correspondent attributes and
+     start the application.
+
+5. Following the same logic above, let's create the app wrapper for
+   the producer. Create the file `ndn-helloworld/extensions/helloworld-producer-app.hpp`
+   with the following content:
+   ```cpp
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+   
+   #ifndef HELLOWORLD_PRODUCER_APP_HPP
+   #define HELLOWORLD_PRODUCER_APP_HPP
+   
+   #include "helloworld-producer.hpp"
+   
+   #include "ns3/ndnSIM/helper/ndn-stack-helper.hpp"
+   #include "ns3/application.h"
+   #include <ns3/core-module.h>
+   
+   namespace ns3 {
+   
+   // Class inheriting from ns3::Application
+   class HelloworldProducerApp : public Application
+   {
+   public:
+     static TypeId
+     GetTypeId()
+     {
+       static TypeId tid = TypeId("HelloworldProducerApp")
+         .SetParent<Application>()
+         .AddConstructor<HelloworldProducerApp>()
+         .AddAttribute("Prefix", "NDN Helloworld Prefix", StringValue("/ndn/helloworld"),
+                       MakeStringAccessor(&HelloworldProducerApp::_prefix), MakeStringChecker());
+   
+       return tid;
+     }
+   
+   protected:
+     virtual void StartApplication() {
+       m_instance.reset(new ::ndn::helloworld::HelloworldProducer(_prefix));
+       m_instance->Start();
+     }
+   
+     virtual void StopApplication() {
+       m_instance->Stop();
+       m_instance.reset();
+     }
+   
+   private:
+     std::unique_ptr<::ndn::helloworld::HelloworldProducer> m_instance;
+     std::string _prefix;
+   };
+   
+   } // namespace ns3
+   
+   #endif // HELLOWORLD_PRODUCER_APP_HPP
+   ```
+   And also create the file `ndn-helloworld/extensions/helloworld-producer-app.cpp`
+   with the following content:
+   ```cpp
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+   
+   #include "helloworld-producer-app.hpp"
+   
+   namespace ns3 {
+   
+   NS_OBJECT_ENSURE_REGISTERED(HelloworldProducerApp);
+   
+   } // namespace ns3
+   ```
+
+6. Now we will create the code for our real application. Let's begin with the
+   consumer. Create the file `ndn-helloworld/extensions/helloworld-consumer.hpp`
+   with the following code:
+   ```cpp
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+   
+   #ifndef HELLOWORLD_CONSUMER_HPP
+   #define HELLOWORLD_CONSUMER_HPP
+   
+   #include <string>
+   #include <random>
+   
+   #include <ndn-cxx/face.hpp>
+   #include <ndn-cxx/interest.hpp>
+   #include <ndn-cxx/security/key-chain.hpp>
+   #include <ndn-cxx/security/signing-helpers.hpp>
+   #include <ndn-cxx/security/validator-config.hpp>
+   #include <ndn-cxx/util/scheduler.hpp>
+   #include <ndn-cxx/util/time.hpp>
+   
+   namespace ndn {
+   namespace helloworld {
+   
+   class HelloworldConsumer
+   {
+   public:
+     HelloworldConsumer(Name prefix);
+     void run();
+     void cleanup();
+     void Start();
+     void Stop();
+   
+   private:
+     void SendInterest();
+     void OnHelloworldContent(const ndn::Interest& interest, const ndn::Data& data);
+     void OnHelloworldTimedOut(const ndn::Interest& interest);
+     void OnHelloworldNack(const ndn::Interest& interest, const ndn::lp::Nack& nack);
+   
+   private:
+     ndn::Face m_face;
+     ndn::KeyChain m_keyChain;
+     ndn::Scheduler m_scheduler;
+     Name m_prefix;
+     uint32_t  m_seq;
+     std::random_device rdevice_;
+     std::mt19937 m_rengine;
+     std::uniform_int_distribution<int> m_rand_nonce;
+   };
+   
+   } // namespace helloworld
+   } // namespace ndn
+   
+   #endif // HELLOWORLD_CONSUMER_HPP
+   ```
+   Then, create the file `ndn-helloworld/extensions/helloworld-consumer.cpp`
+   with the following content:
+   ```cpp
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+   
+   #include "helloworld-consumer.hpp"
+   
+   #include <limits>
+   #include <cmath>
+   #include <boost/algorithm/string.hpp> 
+   #include <algorithm>
+   
+   #include <ns3/log.h>
+   NS_LOG_COMPONENT_DEFINE("ndn.HelloworldConsumer");
+   
+   namespace ndn {
+   namespace helloworld {
+   
+   HelloworldConsumer::HelloworldConsumer(Name prefix)
+     : m_scheduler(m_face.getIoService())
+     , m_prefix(prefix)
+     , m_seq(0)
+     , m_rengine(rdevice_())
+     , m_rand_nonce(0, std::numeric_limits<int>::max())
+   {
+   }
+   
+   void HelloworldConsumer::Start() {
+     m_scheduler.schedule(time::seconds(1), [this] { SendInterest(); });
+   }
+   
+   void HelloworldConsumer::Stop() {
+   }
+   
+   void HelloworldConsumer::run() {
+     m_face.processEvents();
+   }
+   
+   void HelloworldConsumer::cleanup() {
+   }
+   
+   void
+   HelloworldConsumer::SendInterest() {
+     Name name = Name(m_prefix);
+     //name.appendNumber(m_seq++);
+     NS_LOG_INFO("Sending Interest " << name);
    
      Interest interest = Interest();
      interest.setNonce(m_rand_nonce(m_rengine));
      interest.setName(name);
      interest.setCanBePrefix(false);
-     interest.setMustBeFresh(true);
-     interest.setInterestLifetime(time::seconds(5));
+     interest.setInterestLifetime(time::seconds(1));
    
      m_face.expressInterest(interest,
-       std::bind(&NdnGreetings::OnGreetingsContent, this, _1, _2),
-       std::bind(&NdnGreetings::OnGreetingsNack, this, _1, _2),
-       std::bind(&NdnGreetings::OnGreetingsTimedOut, this, _1));
+       std::bind(&HelloworldConsumer::OnHelloworldContent, this, _1, _2),
+       std::bind(&HelloworldConsumer::OnHelloworldNack, this, _1, _2),
+       std::bind(&HelloworldConsumer::OnHelloworldTimedOut, this, _1));
+   
+     //m_scheduler.schedule(time::seconds(1), [this] { SendInterest(); });
+   }
+   
+   void HelloworldConsumer::OnHelloworldContent(const ndn::Interest& interest, const ndn::Data& data) {
+     NS_LOG_INFO("Received Helloworld " << data.getName());
+   
+     size_t data_size = data.getContent().value_size();
+     std::string data_value((char *)data.getContent().value(), data_size);
+     NS_LOG_INFO("Received data: size=" << data_size << " value=" << data_value);
+   }
+   
+   void HelloworldConsumer::OnHelloworldTimedOut(const ndn::Interest& interest) {
+     NS_LOG_INFO("Interest timed out for Name: " << interest.getName());
+   }
+   
+   void HelloworldConsumer::OnHelloworldNack(const ndn::Interest& interest, const ndn::lp::Nack& nack) {
+     NS_LOG_INFO("Received Nack with reason: " << nack.getReason());
+   }
+   
+   } // namespace helloworld
+   } // namespace ndn
    ```
-   There are many important aspects in the code above:
-   - First of all, we need to pay attention on how we are composing
-     the name prefix: m_appPrefix + kGreetingsType + neighName. That
-     means we will send an interest that can only be satisfied by the
-     producer/neighbor (and, of course, the opportunistic cache
-     torwards the producer)
-   - Then we create an Interest object and, among many other
-     attributes, we set the Interest Lifetime: how much time the
-     interest will be waiting to be replied (i.e., it will remain
-     in the PIT).
-   - Finally, when expressing the interest -- i.e., sending the interest
-     out of the application face to be handled by NFD --, we define three
-     callback functions: OnGreetingsContent, OnGreetingsNack and
-     OnGreetingsTimedOut. The name of the functions are pretty explanat
+   It is worthy mention some methods of the code above:
+   - When the application starts (`HelloworldConsumer::Start()`), it will
+     call the scheduler to send an interest in one second from the moment
+     it started. It is important wait a bit instead of sending interests
+     right away because when the application starts, NFD will initialize
+     some internal data structures and that can take a few milliseconds.
+   - In the `SendInterest()` method is where most of the consume logic
+     happens. We first create an interest object, setup the nonce value,
+     setup the Name (which will be based on the prefix attribute),
+     setup the lifetime (i.e., the time which the interest will remain
+     valid to wait on the PIT), and we setup the CanBePrefix attribute
+     to false, meaning the reply Data packet must have the same Name
+     as requested in the Interest (producers can eventually add extra
+     Name components to the produced data as a way to benefit from the
+     enriched prefix name to add specific semantics). Then, we send
+     out our interest through a call to the `expressInterest` 
+     method from the application face.
+     The expressInterest method receives as parameters the interest
+     itself and three possible callbacks: one to be called when the
+     interest is satisfaid, the second to be called in case a Negative
+     Ack is received, the third one will be called in case of a
+     timeout (according to setInterestLifetime).
 
-2. Let's run the application and see how it will behave:
-   ```bash
-   ./build-and-run.sh
-   ```
-   As a result you should see something similar to the following output:
-
-![output-exer2-step3.png](../../images/output-exer2-step3.png)
-
-   From the output above, we can see that the application is sending
-   greetings interest, and we also see other interesting aspects:
-   - As we just mentioned, upon receiving the hello interest (OnHelloInterest)
-     each node will send a greetings interest using the same naming prefix
-     learned from the neighbor (SendGreetingsInterest)
-   - Just a few milliseconds later, each node receives a NACK message of the
-     type NoRoute. What is that?
-   - Even though all nodes have a default route pointing to each other and
-     none of them are able to satisfy the greeting interest, no loop happens.
-     Why is that?
-
-## Step 4: Replying to Greetings Interest
-
-The last step will be to implement the function that answer the greetings
-interest. Our application will randomly select one greetings expression 
-and sent it in a data packet.
-
-1. To be able to answer Greetings interest, just like we did for hello, we
-   first to setup a interest filter. To do so, edit the file 
-   `extensions/ndn-greetings.cpp`, specially in the
-   *TODO 4*. Right after the TODO comment, you should insert the following
-   code:
+7. Then we can define the code for the producer. Create the file
+   `ndn-helloworld/extensions/helloworld-producer.hpp`
+   with the following code:
    ```cpp
-     Name appGreetingsPrefix = Name(m_appPrefix);
-     appGreetingsPrefix.append(kGreetingsType);
-     appGreetingsPrefix.append(m_nodeName);
-     m_face.setInterestFilter(appGreetingsPrefix, std::bind(&NdnGreetings::OnGreetingsInterest, this, _2),
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+   
+   #ifndef HELLOWORLD_PRODUCER_HPP
+   #define HELLOWORLD_PRODUCER_HPP
+   
+   #include <string>
+   
+   #include <ndn-cxx/face.hpp>
+   #include <ndn-cxx/interest.hpp>
+   #include <ndn-cxx/security/key-chain.hpp>
+   #include <ndn-cxx/security/signing-helpers.hpp>
+   #include <ndn-cxx/util/time.hpp>
+   
+   namespace ndn {
+   namespace helloworld {
+   
+   class HelloworldProducer
+   {
+   public:
+     HelloworldProducer(Name prefix);
+     void run();
+     void cleanup();
+     void Start();
+     void Stop();
+   
+   private:
+     void OnHelloworldInterest(const ndn::Interest& interest);
+   
+   private:
+     ndn::Face m_face;
+     ndn::KeyChain m_keyChain;
+     Name m_prefix;
+   };
+   
+   } // namespace helloworld
+   } // namespace ndn
+   
+   #endif // HELLOWORLD_PRODUCER_HPP
+   ```
+   Then, create the file `ndn-helloworld/extensions/helloworld-producer.cpp`
+   with the following content:
+   ```cpp
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+   
+   #include "helloworld-producer.hpp"
+   
+   #include <limits>
+   #include <cmath>
+   #include <boost/algorithm/string.hpp> 
+   #include <algorithm>
+   
+   #include <ns3/log.h>
+   NS_LOG_COMPONENT_DEFINE("ndn.HelloworldProducer");
+   
+   namespace ndn {
+   namespace helloworld {
+   
+   HelloworldProducer::HelloworldProducer(Name prefix)
+     : m_prefix(prefix)
+   {
+     m_face.setInterestFilter(m_prefix, std::bind(&HelloworldProducer::OnHelloworldInterest, this, _2),
        [this](const Name&, const std::string& reason) {
          throw std::runtime_error("Failed to register sync interest prefix: " + reason);
      });
-   ```
-   The above code will create an entry on the FIB for the Greetings prefix (i.e.,
-   m\_appPrefix + kGreetingsType + m\_nodeName) and with next hop being the
-   application face.
-
-2. Next step is to fix *TODO 5*:
-   ```cpp
-     MYLOG_INFO("Received greetings Interest " << interest.getName());
+   }
+   
+   void HelloworldProducer::Start() {
+   }
+   
+   void HelloworldProducer::Stop() {
+   }
+   
+   void HelloworldProducer::run() {
+     m_face.processEvents();
+   }
+   
+   void HelloworldProducer::cleanup() {
+   }
+   
+   void HelloworldProducer::OnHelloworldInterest(const ndn::Interest& interest) {
+     NS_LOG_INFO("Received helloworld Interest " << interest.getName());
    
      auto data = std::make_shared<ndn::Data>(interest.getName());
      data->setFreshnessPeriod(ndn::time::milliseconds(1000));
    
-     // Set greetings answer
-     std::string greetings_str = m_greetings.NextGreetings();
-     data->setContent(reinterpret_cast<const uint8_t*>(greetings_str.c_str()), greetings_str.size());
+     std::string data_str = "Hello World!!!";
+     data->setContent(reinterpret_cast<const uint8_t*>(data_str.c_str()), data_str.size());
      m_keyChain.sign(*data);
      m_face.put(*data);
    
-     MYLOG_INFO("Greetings sent! MyMsg: " << greetings_str);
+     NS_LOG_INFO("Data sent! Content: " << data_str);
+   }
+   } // namespace helloworld
+   } // namespace ndn
    ```
-   The code above has the following interesting aspects:
-   - We create the Data object and setup the freshness period to 1000ms (1 second),
-     meaning that data packet will last one second in the Content Store
-   - We use our core application (`greetings-core.cpp`) to generate a random
-     greetings expression to send in the data packate. The setContent() call
-     accept a block of bytes in a certain size. As so, your application has
-     to serialize whatever you wanna send before calling this function. Since
-     we are just sending out strings, there is no need for advanced serialization.
-   - We use the keyChain instance to sign our data. Even though we didnt configure
-     any security so far, since all data packat is signed, ndn-cxx uses a dummy
-     self-signed certificate/key as default.
+   The producer code is a little more simple than consumer's code. That is
+   because our application is really simple, but sometimes the logic
+   behind the producer is more complex (and sometimes the application plays
+   the role of producer and consumer at the same time - see our next
+   exercise!).
 
-3. Compile and run the code:
-   ```cpp
+8. Now that we have all necessary code, let's build the application and run:
+   ```bash
    ./build-and-run.sh
    ```
-   The output should looks like the following:
+   You should be able to see something like the following picture:
 
-![output-exer2-step4.png](../../images/output-exer2-step4.png)
+![output-exer1-part1-1.png](../../images/output-exer1-part1-1.png)
 
-### A note about the Content Store
+In the above screenshot, we can see that the consumer has sent a interest,
+the producer received the interest and it sent the data packet back to the
+consumer. Then, the consumer just print the content.
 
-As you can see from the output above, all nodes will send two greetings
-interest for the two other nodes (log messages **Sending greetings Interest 
-to neighbor**). In the other hand, when we check the received greetings
-interest on each node, we only see one interest (log message **Received 
-greetings Interest**). That is happening because the second interest
-is answered from the Content Store and dont have to reach the proceder
-application. As we developed in the code, our Data packets have a freshness
-period of 1 second, so any interest received within that period will
-take advantage of the opportunistic cache.
-
-## Step 5: Wi-Fi Mobility scenario (Extra, optional)
-
-Now that our application is executing the complete workflow, we can
-test it on different scenarios. What about testing it on Wireless
-Mobile Adhoc scenario?
-
-Take a look on the file `scenarios/ndn-greetings-mobility.cpp` to
-understand all setup for the Wireless scenario.
-
-The ndnSIM simulator allow you to define mobility patterns based
-on ns2 movement scripts. NS2 movement scripts can be generated using
-[Bonnmotion](https://sys.cs.uos.de/bonnmotion/), a mobility scenario
-generation and analysis tool. We've provided two trace files using
-RandomWalk and RPGM mobility models (check `solution` folder). Just
-for future reference, the traces were generated using the following
-command line (you dont need to run the following commands):
+We have enable more logging to have more visibility on what is happening.
+For instance, the following execution will show all logs from NFD in the
+forwarding process:
 ```bash
-./bin/bm -f scenario-10nodes-RPGM-300x300 RPGM -n 10 -x 300 -y 300 -d 2700 -i 3600 -h 20 -l 1 -p 0
-./bin/bm NSFile -f scenario-10nodes-RPGM-300x300
-./bin/bm -f scenario-10nodes-RandomWalk-300x300 RandomWalk -n 10 -x 300 -y 300 -d 2700 -i 3600 -h 20 -l 1 -p 0 -t 15
-./bin/bm NSFile -f scenario-10nodes-RandomWalk-300x300
+docker exec -it \
+  -e NS_LOG=ndn.HelloworldConsumer:ndn.HelloworldProducer:ndn-cxx.nfd.Forwarder \
+  ndn-tutorial-e1 ./waf --run "helloworld-2nodes"
 ```
 
-Let's run the Mobile scenario:
+The output should looks like:
 
-1. We suggest a sligh modification on the NDN Greetings application to send
-   hello interest in a periodic manner. Thus, when nodes move around they
-   will have opportunity to establish neighborhood with different nodes.
-   To do so, edit the file `extensions/ndn-greetings.cpp`, specially in the
-   *TODO 6*. Right after the TODO comment, you should uncomment the following
-   code:
+![output-exer1-part1-2.png](../../images/output-exer1-part1-2.png)
+![output-exer1-part1-3.png](../../images/output-exer1-part1-3.png)
+
+Obs: the output above was truncated to show the simulation logs after
+1s, which is the moment our application starts sending interest.
+
+## Part 2: Investigating the PIT and CS usage
+
+Let's modify a litte our application and check some of the NDN
+components: the PIT and CS. The ideia is generate not just one
+interest, but three of them and see how the PIT/CS will behave.
+
+1. Modify the application to send three consecutive interests. To do so,
+   edit the file `ndn-helloworld/extensions/helloworld-consumer.cpp` and
+   apply the following change:
    ```cpp
-     m_scheduler.schedule(time::seconds(1), [this] { SendHelloInterest(); });
+    void HelloworldConsumer::Start() {
+   -  m_scheduler.schedule(time::seconds(1), [this] { SendInterest(); });
+   +  m_scheduler.schedule(time::seconds(1), [this] { SendInterest(); SendInterest(); });
+   +  m_scheduler.schedule(time::seconds(2), [this] { SendInterest(); });
+    }
+   ```
+   The change consists in changing the scheduler call to send two consecutive
+   interests 1 second after start, and another interest 2 seconds after start.
+
+2. Let's build and run the application:
+   ```bash
+   ./build-and-run.sh
    ```
 
-2. Compile the code and run:
+The output should looks like:
+
+![output-exer1-part2-1.png](../../images/output-exer1-part2-1.png)
+
+In the output above, we have:
+- The consumer generates two consecutive interests
+- A few milliseconds later, just one interest reaches the producer. The procuder produces data and send it back
+- Again a few milliseconds later, the consumer delivers two data to the application.
+- One second later, the consumer generates a new interest and gets answered right away.
+
+When the consumer generates two consecutive interests (both at second 1.0), the stateful dataplane supress
+one of them to avoid redundant packets. Instead of send a new interest out, the forwarding
+daemon just update the PIT entry with the ingress face and discard the interest. After
+the interest has been satisfied (at second 1.021), the forwarding daemon will provide data to all faces
+in the PIT entry. After the interest has been satisfied and a new interest is sent
+again (at second 2.0), the forwarding daemon benefits from the cache (ContentStore) to
+provide data right away.
+
+In order to have more visibility on the forwarding process and check the behavior
+described above, we can run our application with more logging:
+```bash
+docker exec -it \
+  -e NS_LOG=ndn.HelloworldConsumer:ndn.HelloworldProducer:ndn-cxx.nfd.Forwarder:ndn-cxx.nfd.MulticastStrategy \
+  ndn-tutorial-e1 ./waf --run "helloworld-2nodes"
+```
+
+The following screenshot provides highlighted output from the command above:
+
+![output-exer1-part2-2.png](../../images/output-exer1-part2-2.png)
+
+## Part 3: Three nodes scenario: consumer, producer and forwarder
+
+At this exercise we will create a new scenario with three nodes:
+one consumer, one producer and one node just acting as forwarder.
+
+1. First of all, let's modify our application back to its version
+   prior to Part 2:
    ```bash
-   ./run-mobility.sh
+   cp solution/helloworld-consumer-part1.cpp ndn-helloworld/extensions/helloworld-consumer.cpp
    ```
 
-3. You can also run the simulation with the Visualizer module:
-   ```bash
-   ./run-mobility.sh --vis
+2. Now let's edit the file `ndn-helloworld/extensions/helloworld-consumer.cpp`
+   and uncomment the recurring call to the scheduler, so that we can send
+   helloworld interest every second. Moreover, we will also add another
+   component to the helloworld name prefix, a sequence number, which will
+   ensure the interest always reaches the producer. The following changes
+   should be made:
+   ```cpp
+   @@ -39,7 +39,7 @@
+    void
+    HelloworldConsumer::SendInterest() {
+      Name name = Name(m_prefix);
+   -  //name.appendNumber(m_seq++);
+   +  name.appendNumber(m_seq++);
+      NS_LOG_INFO("Sending Interest " << name);
+   
+      Interest interest = Interest();
+   @@ -53,7 +53,7 @@
+        std::bind(&HelloworldConsumer::OnHelloworldNack, this, _1, _2),
+        std::bind(&HelloworldConsumer::OnHelloworldTimedOut, this, _1));
+   
+   -  //m_scheduler.schedule(time::seconds(1), [this] { SendInterest(); });
+   +  m_scheduler.schedule(time::seconds(1), [this] { SendInterest(); });
+    }
    ```
+
+3. Next step will be create the three nodes scenario. To do so, create the file
+   `ndn-helloworld/scenarios/helloworld-3nodes.cpp` with the following content:
+   ```cpp
+   /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+   
+   #include "helloworld-consumer-app.hpp"
+   #include "helloworld-producer-app.hpp"
+   
+   #include "ns3/core-module.h"
+   #include "ns3/network-module.h"
+   #include "ns3/point-to-point-module.h"
+   #include "ns3/ndnSIM-module.h"
+   
+   namespace ns3 {
+   
+   int
+   main(int argc, char* argv[])
+   {
+     Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("1Mbps"));
+     Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("10ms"));
+   
+     // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
+     CommandLine cmd;
+     cmd.Parse(argc, argv);
+   
+     // Creating nodes
+     NodeContainer nodes;
+     nodes.Create(3);
+   
+     // Connecting nodes
+     PointToPointHelper p2p;
+     p2p.Install(nodes.Get(0), nodes.Get(1));
+     p2p.Install(nodes.Get(1), nodes.Get(2));
+   
+     // Install NDN stack on all nodes
+     ndn::StackHelper ndnHelper;
+     ndnHelper.SetDefaultRoutes(true);
+     ndnHelper.InstallAll();
+   
+     // Choosing forwarding strategy
+     ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/multicast");
+   
+     // Installing applications
+   
+     // Consumer
+     ndn::AppHelper consumerApp("HelloworldConsumerApp");
+     consumerApp.Install(nodes.Get(0));
+   
+     // Producer
+     ndn::AppHelper producerApp("HelloworldProducerApp");
+     producerApp.Install(nodes.Get(2));
+   
+     Simulator::Stop(Seconds(10.0));
+   
+     Simulator::Run();
+     Simulator::Destroy();
+   
+     return 0;
+   }
+   
+   } // namespace ns3
+   
+   int
+   main(int argc, char* argv[])
+   {
+     return ns3::main(argc, argv);
+   }
+   ```
+   Notice that the main difference between this scenario is the previous one
+   is the number of nodes, the links and the node where the producer is
+   installed. Besides that, the new forwarder node will be a regular node
+   with the NDN stack.
+
+4. Let's run the application and see how it behaves:
+   ```bash
+   ./run-3nodes.sh
+   ```
+   The output should looks like:
+
+![output-exer1-part3-1.png](../../images/output-exer1-part3-1.png)
+
+Observe that now we only see messages from node 0 and node 2. The reason is
+because node 1 is the forwarder, and we only enabled logging for the nodes
+running our application (`ndn.HelloworldConsumer` and `ndn.HelloworldProducer`).
+
+5. Let's take this opportunity to also run our simulation through the
+   graphical visualizer. To do so, run the simulation with the parameter
+   `--vis` as shown below:
+   ```bash
+   ./run-3nodes.sh --vis
+   ```
+   You should see a screen like this:
+
+![output-exer1-part3-2.png](../../images/output-exer1-part3-2.png)
+
+You can click at node 1 (the node in the middle) and show the PIT, FIB
+and ContentStore. Then you can run the simulation and see how it will
+behaves during the execution:
+
+![output-exer1-part3-3.png](../../images/output-exer1-part3-3.png)
 
 ## Next Steps
 
 Congratulations, your implementation works! Move onto the next assignment
-[Signed NDN-Greetings](../3-signed-ndn-greetings)!
+[NDN-Greetings](../2-ndn-greetings)!

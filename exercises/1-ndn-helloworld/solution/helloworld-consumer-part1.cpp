@@ -7,11 +7,11 @@
 #include <boost/algorithm/string.hpp> 
 #include <algorithm>
 
-#define MYLOG_COMPONENT "ndn.HelloworldConsumer"
-#include "mylog-helper.hpp"
+#include <ns3/log.h>
+NS_LOG_COMPONENT_DEFINE("ndn.HelloworldConsumer");
 
 namespace ndn {
-namespace greetings {
+namespace helloworld {
 
 HelloworldConsumer::HelloworldConsumer(Name prefix)
   : m_scheduler(m_face.getIoService())
@@ -39,8 +39,8 @@ void HelloworldConsumer::cleanup() {
 void
 HelloworldConsumer::SendInterest() {
   Name name = Name(m_prefix);
-  name.appendNumber(m_seq++);
-  MYLOG_INFO("Sending Interest " << name);
+  //name.appendNumber(m_seq++);
+  NS_LOG_INFO("Sending Interest " << name);
 
   Interest interest = Interest();
   interest.setNonce(m_rand_nonce(m_rengine));
@@ -49,23 +49,27 @@ HelloworldConsumer::SendInterest() {
   interest.setInterestLifetime(time::seconds(1));
 
   m_face.expressInterest(interest,
-    std::bind(&NdnGreetings::OnHelloworldContent, this, _1, _2),
-    std::bind(&NdnGreetings::OnHelloworldNack, this, _1, _2),
-    std::bind(&NdnGreetings::OnHelloworldTimedOut, this, _1));
+    std::bind(&HelloworldConsumer::OnHelloworldContent, this, _1, _2),
+    std::bind(&HelloworldConsumer::OnHelloworldNack, this, _1, _2),
+    std::bind(&HelloworldConsumer::OnHelloworldTimedOut, this, _1));
 
-  m_scheduler.schedule(time::seconds(1), [this] { SendInterest(); });
+  //m_scheduler.schedule(time::seconds(1), [this] { SendInterest(); });
 }
 
 void HelloworldConsumer::OnHelloworldContent(const ndn::Interest& interest, const ndn::Data& data) {
-  MYLOG_DEBUG("Received Helloworld " << data.getName());
+  NS_LOG_INFO("Received Helloworld " << data.getName());
+
+  size_t data_size = data.getContent().value_size();
+  std::string data_value((char *)data.getContent().value(), data_size);
+  NS_LOG_INFO("Received data: size=" << data_size << " value=" << data_value);
 }
 
 void HelloworldConsumer::OnHelloworldTimedOut(const ndn::Interest& interest) {
-  MYLOG_DEBUG("Interest timed out for Name: " << interest.getName());
+  NS_LOG_INFO("Interest timed out for Name: " << interest.getName());
 }
 
 void HelloworldConsumer::OnHelloworldNack(const ndn::Interest& interest, const ndn::lp::Nack& nack) {
-  MYLOG_DEBUG("Received Nack with reason: " << nack.getReason());
+  NS_LOG_INFO("Received Nack with reason: " << nack.getReason());
 }
 
 } // namespace helloworld

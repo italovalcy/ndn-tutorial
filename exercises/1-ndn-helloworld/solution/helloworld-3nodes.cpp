@@ -22,11 +22,12 @@ main(int argc, char* argv[])
 
   // Creating nodes
   NodeContainer nodes;
-  nodes.Create(2);
+  nodes.Create(3);
 
-  // Connecting nodes using two links
+  // Connecting nodes
   PointToPointHelper p2p;
   p2p.Install(nodes.Get(0), nodes.Get(1));
+  p2p.Install(nodes.Get(1), nodes.Get(2));
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
@@ -40,11 +41,11 @@ main(int argc, char* argv[])
 
   // Consumer
   ndn::AppHelper consumerApp("HelloworldConsumerApp");
-  auto apps = consumerApp.Install(nodes.Get(0));
+  consumerApp.Install(nodes.Get(0));
 
   // Producer
   ndn::AppHelper producerApp("HelloworldProducerApp");
-  producerHelper.Install(nodes.Get(1));
+  producerApp.Install(nodes.Get(2));
 
   Simulator::Stop(Seconds(10.0));
 

@@ -5,4 +5,5 @@
 .DS*
 .lock*
 build/
+ndn-helloworld/
 *.pyc
